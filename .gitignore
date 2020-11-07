@@ -1,0 +1,5 @@
+x86_64-pc-linux-gnu-library
+*.csv
+*.txt
+*.r
+*.pdf
