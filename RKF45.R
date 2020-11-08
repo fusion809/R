@@ -4,7 +4,7 @@ l <- 1.0
 theta0 <- 0
 thetaDot0 <- 0
 
-# Calculate period
+# Calculate period using Chebyshev-Gauss quadrature
 N <- 1000
 n <- 1:N
 x <- cos(pi*(2*n-1)/(2*N))
@@ -38,7 +38,7 @@ simpPen <- function(g, l, t, theta, thetaDot, dt) {
 while (t[i] < tf) {
   dt <- min(dt, tf-t[i])
 
-  # RK45
+  # RK45 approximators for next dependent variable values
   K1 <- simpPen(g, l, t[i], theta[i], thetaDot[i], dt)
   k1 <- K1[1]
   l1 <- K1[2]
@@ -69,21 +69,26 @@ while (t[i] < tf) {
                  3544*l3/2565 + 1859*l4/4104 - 11*l5/40, dt)
   k6 <- K6[1]
   l6 <- K6[2]
-  
+
+  # 4th order approximations for the next theta and theta dot values  
   theta1 <- theta[i] + 25*k1/216 + 1408*k3/2565 + 2197*k4/4104 - k5/5
   thetaDot1 <- thetaDot[i] + 25*l1/216 + 1408*l3/2565 + 2197*l4/4104 - l5/5;
+
+  # 5th order approximations for the next theta and theta dot values
   theta2 <- theta[i] + 16*k1/135 + 6656*k3/12825 + 28561*k4/56430 - 9*k5/50 + 
     2*k6/55;
   thetaDot2 <- thetaDot[i] + 16*l1/135 + 6656*l3/12825 + 28561*l4/56430 - 
     9*l5/50+2*l6/55;
   
+  # Error estimate
   RTheta <- abs(theta1-theta2)/dt
   RThetaDot <- abs(thetaDot1-thetaDot2)/dt
-  sTheta <- (epsilon/(2*RTheta))^(0.25)
-  sThetaDot <- (epsilon/(2*RThetaDot))^(0.25)
   R <- max(RTheta, RThetaDot)
-  s <- min(sTheta, sThetaDot)
-  
+
+  # Step size correction
+  s <- (epsilon/(2*R))^(0.25)
+
+  # If error is less than the specified error tolerance, move on
   if (R <= epsilon) {
     t <- append(t, t[i]+dt)
     theta <- append(theta, theta1)
@@ -93,6 +98,7 @@ while (t[i] < tf) {
   dt <- dt * s
 }
 
+# Plot solution
 mypar(1,3)
 plot(t, theta)
 plot(t, thetaDot)
