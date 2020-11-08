@@ -3,3 +3,4 @@ x86_64-pc-linux-gnu-library
 *.txt
 *.r
 *.pdf
+.Rproj.user
